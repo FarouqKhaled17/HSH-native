@@ -1,0 +1,70 @@
+const FONTS = {
+    tajawalRegular: 'Tajawal-Regular',
+    tajawalBold: 'Tajawal-Bold',
+    tajawalMedium: 'Tajawal-Medium',
+    tajawalLight: 'Tajawal-Light',
+    tajawalExtraBold: 'Tajawal-ExtraBold',
+    tajawalSemiBold: 'Tajawal-SemiBold',
+}
+
+const COLORS = {
+    white: '#FFFFFF',
+    black: '#000000',
+    gray: '#6A6A6A',
+    lightGray: '#F5F5F5',
+    darkGray: '#4F4F4F',
+    lightRed: '#FFEBEB',
+    lightGreen: '#E8F7F1',
+    lightBlue: '#E8F7F1',
+    lightYellow: '#FFF7E9',
+    lightOrange: '#FFF7E9',
+    lightPurple: '#F5F4FF',
+    lightPink: '#FFE4F0',
+    lightBrown: '#F5F4FF',
+    lightCyan: '#E8F7F1',
+    lightTeal: '#E8F7F1',
+    lightIndigo: '#F5F4FF',
+    lightGray2: '#F6F6F6',
+    blue: '#0000FF',
+    AliceBlue: '#F0F8FF',
+    BabyBlue: '#89CFF0',
+    BlueGray: '#6699CC',
+    CadetBlue: '#5F9EA0',
+    CarolinaBlue: '#56A0D3',
+    CornflowerBlue: '#6495ED',
+    Cyan: '#00FFFF',
+    DarkBlue: '#00008B',
+    DeepSkyBlue: '#00BFFF',
+    Denim: '#1560BD',
+    DodgerBlue: '#1E90FF',
+    ElectricBlue: '#7DF9FF',
+    EgyptianBlue: '#1034A6',
+    transparent: 'transparent',
+    transparentBlack1: 'rgba(0,0,0,0.1)',
+    transparentBlack7: 'rgba(0,0,0,0.7)',
+    transparentBlack9: 'rgba(0,0,0,0.9)',
+}
+
+const SIZES = {
+    // global sizes
+    base: 8,
+    font: 14,
+    radius: 12,
+    padding: 25,
+    padding2: 36,
+    padding3: 40,
+    padding4: 50,
+    padding5: 60,
+
+    // font sizes
+    h1: 26,
+    h2: 20,
+    h3: 18,
+    title: 18,
+    header: 16,
+    body: 14,
+    caption: 12,
+    small: 10,
+}
+
+export { COLORS, SIZES, FONTS }
