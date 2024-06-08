@@ -31,13 +31,13 @@ export default function LoginScreen() {
 
         <View className="mt-4">
             <Text className="text-gray-600 ml-4 mb-2">كلمة المرور</Text>
-            <TextInput className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-3" placeholder='ادخل الرقم السري' />
-        </View>
+            <TextInput className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-3" placeholder='ادخل الرقم السري' secureTextEntry />
+        </View> 
         <TouchableOpacity onPress={() => navigation.navigate('forgetPassword')}>
             <Text className="text-blue-500 text-right mr-4">نسيت كلمة المرور ؟</Text>
         </TouchableOpacity>
         <View className="mt-8 ">
-            <TouchableOpacity className=" py-3 rounded-3xl mx-10" style={{ backgroundColor: COLORS.Denim}}>
+            <TouchableOpacity className=" py-3 rounded-3xl mx-10" style={{ backgroundColor: COLORS.Denim}} onPress={() => navigation.navigate('MainTabs')}>
             <Text className="text-white text-center font-bold">تسجيل الدخول</Text>
             </TouchableOpacity>
         </View>

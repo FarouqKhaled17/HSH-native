@@ -5,6 +5,7 @@ import { COLORS, FONTS } from '../constants/theme.js';
 import { useNavigation } from '@react-navigation/native';
 
 
+
 export default function WelcomeScreen() {
     const naviagtion=useNavigation();
   return (
@@ -37,18 +38,15 @@ export default function WelcomeScreen() {
 
 const styles = StyleSheet.create({
     Text: {
-      fontFamily: FONTS.tajawalExtraBold,
         fontSize: 30,
         textAlign: 'center',
     },
     caption: {
-        fontFamily: FONTS.tajawalExtraBold,
         fontSize: 20,
         textAlign: 'center',
         color: COLORS.white,
     },
     txtBtn: {
-        fontFamily: FONTS.tajawalMedium,
         fontSize: 14,
         textAlign: 'center',
     },

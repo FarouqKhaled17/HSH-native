@@ -1,35 +1,40 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Animated, Easing } from 'react-native';
 import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../constants/theme.js';
-import { ArrowLeftIcon } from 'react-native-heroicons/solid';
+import {  ArrowLeftIcon } from 'react-native-heroicons/solid';
 import * as ImagePicker from 'expo-image-picker';
+import DateTimePickerModal from 'react-native-modal-datetime-picker'; // Correct import
 
 export default function SignUp() {
   const navigation = useNavigation();
   const [profileImage, setProfileImage] = useState(null);
   const [nationalIdImage, setNationalIdImage] = useState(null);
   const [feesImage, setFeesImage] = useState(null);
-  const [error, setError] = useState(null);
+  const [date, setDate] = useState(new Date());
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false); // State to manage visibility of the date picker
 
-//pickImage function to pick image from gallery using expo-image-picker
+
   const pickImage = async (setImage) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert(
-        'Permission Denied',
-        'Sorry, we need camera roll permission to upload images.'
-      );
+      Alert.alert('Permission Denied', 'Sorry, we need camera roll permission to upload images.');
       return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 1 });
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
     if (!result.canceled) {
       setImage(result.assets[0].uri);
-      setError(null);
-    } else {
-      setError('No image selected.');
     }
+  };
+
+  const handleConfirm = (selectedDate) => {
+    setDatePickerVisibility(false);
+    setDate(selectedDate);
   };
 
   return (
@@ -45,15 +50,14 @@ export default function SignUp() {
         </View>
       </SafeAreaView>
 
-      <ScrollView style={styles.formContainer}>
-        {/* Form inputs */}
+      <ScrollView style={styles.formContainer} keyboardShouldPersistTaps='handled'>
         <View style={styles.formGroup}>
           <Text style={styles.label}>اسم المستخدم</Text>
-          <TextInput style={styles.input} placeholder='ادخل اسم المستخدم' />
+          <TextInput style={styles.input} placeholder='ادخل اسم المستخدم' autoCapitalize='none' autoCorrect={false} />
         </View>
         <View style={styles.formGroup}>
           <Text style={styles.label}>البريد الالكتروني</Text>
-          <TextInput style={styles.input} placeholder='ادخل بريدك الالكتروني' />
+          <TextInput style={styles.input} placeholder='ادخل بريدك الالكتروني' autoCapitalize='none' autoCorrect={false} />
         </View>
         <View style={styles.formGroup}>
           <Text style={styles.label}>كلمة المرور</Text>
@@ -77,22 +81,30 @@ export default function SignUp() {
         </View>
         <View style={styles.formGroup}>
           <Text style={styles.label}>الرقم القومي</Text>
-          <TextInput style={styles.input} placeholder='ادخل الرقم القومي' />
+          <TextInput style={styles.input} placeholder='ادخل الرقم القومي' keyboardType='number-pad' />
         </View>
         <View style={styles.formGroup}>
-          <Text style={styles.label}>تاريخ الميلاد</Text>
-          <TextInput style={styles.input} placeholder='ادخل تاريخ ميلادك' />
+        <Text style={styles.label}>تاريخ الميلاد</Text>
+          <TouchableOpacity onPress={() => setDatePickerVisibility(true)} style={styles.datePickerButton}>
+            <Text>{date.toLocaleDateString()}</Text>
+          </TouchableOpacity>
+          {/* Show DateTimePickerModal component */}
+          <DateTimePickerModal
+            isVisible={isDatePickerVisible}
+            mode="date"
+            onConfirm={handleConfirm}
+            onCancel={() => setDatePickerVisibility(false)}
+          />
         </View>
         <View style={styles.formGroup}>
           <Text style={styles.label}>رقم الهاتف</Text>
-          <TextInput style={styles.input} placeholder='ادخل رقم هاتفك' />
+          <TextInput style={styles.input} placeholder='ادخل رقم هاتفك' keyboardType='phone-pad' />
         </View>
         <View style={styles.formGroup}>
           <Text style={styles.label}>المحافظة</Text>
           <TextInput style={styles.input} placeholder='ادخل محافظتك' />
         </View>
         
-        {/* Image upload inputs */}
         <View style={styles.formGroup}>
           <Text style={styles.label}>رفع صورتك الشخصية</Text>
           <TouchableOpacity style={styles.uploadButton} onPress={() => pickImage(setProfileImage)}>
@@ -115,14 +127,14 @@ export default function SignUp() {
           {feesImage && <Image source={{ uri: feesImage }} style={styles.uploadedImage} />}
         </View>
 
-        <TouchableOpacity style={styles.loginButton}>
-          <Text style={styles.loginButtonText}>تسجيل الدخول</Text>
+        <TouchableOpacity style={styles.signUpButton} onPress={() => navigation.navigate('login')}>
+          <Text style={styles.signUpButtonText}>انشاء حساب</Text>
         </TouchableOpacity>
         <View style={styles.signUpPrompt}>
-          <TouchableOpacity onPress={() => navigation.navigate('signup')}>
-            <Text style={styles.signUpText}>انشاء حساب</Text>
+          <Text style={styles.signUpLabel}>لديك حساب بالفعل؟</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('login')}>
+            <Text style={styles.signUpText}>تسجيل الدخول</Text>
           </TouchableOpacity>
-          <Text style={styles.signUpLabel}> ليس لديك حساب؟ </Text>
         </View>
       </ScrollView>
     </View>
@@ -155,13 +167,21 @@ const styles = StyleSheet.create({
     color: 'gray',
     marginLeft: 16,
     marginBottom: 8,
+    fontWeight: '700',
   },
   input: {
     padding: 16,
     backgroundColor: COLORS.lightGray,
     color: 'gray',
+    fontWeight: '200',
     borderRadius: 16,
     marginBottom: 12,
+  },
+  datePickerButton: {
+    padding: 16,
+    backgroundColor: COLORS.lightGray,
+    borderRadius: 16,
+    alignItems: 'center',
   },
   uploadButton: {
     backgroundColor: 'lightgray',
@@ -178,13 +198,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
     borderRadius: 8,
   },
-  loginButton: {
-    backgroundColor: 'blue',
+  signUpButton: {
+    backgroundColor: COLORS.Denim,
     paddingVertical: 12,
     borderRadius: 16,
     marginTop: 32,
   },
-  loginButtonText: {
+  signUpButtonText: {
     color: 'white',
     textAlign: 'center',
     fontWeight: 'bold',
