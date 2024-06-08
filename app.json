@@ -23,6 +23,24 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "node_modules/@expo-google-fonts/tajawal/Tajawal_100Thin.ttf",
+            "node_modules/@expo-google-fonts/tajawal/Tajawal_300Light.ttf",
+            "node_modules/@expo-google-fonts/tajawal/Tajawal_200ExtraLight.ttf",
+            "node_modules/@expo-google-fonts/tajawal/Tajawal_400Regular.ttf",
+            "node_modules/@expo-google-fonts/tajawal/Tajawal_500Medium.ttf",
+            "node_modules/@expo-google-fonts/tajawal/Tajawal_600SemiBold.ttf",
+            "node_modules/@expo-google-fonts/tajawal/Tajawal_700Bold.ttf",
+            "node_modules/@expo-google-fonts/tajawal/Tajawal_800ExtraBold.ttf",
+            "node_modules/@expo-google-fonts/tajawal/Tajawal_900Black.ttf"
+          ]
+        }
+      ]
+    ]
   }
 }

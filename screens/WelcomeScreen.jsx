@@ -12,7 +12,6 @@ export default function WelcomeScreen() {
       <View className="my-10   ">
         <Text style={styles.Text} >مرحبا بكم</Text>
         <Text style={styles.Text}>مستشفي جامعة حلوان</Text>
-
         </View>
 
       <View className="flex-row justify-center">
