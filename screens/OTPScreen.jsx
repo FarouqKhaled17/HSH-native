@@ -7,17 +7,50 @@ import { useNavigation } from '@react-navigation/native';
 
 export default function OTPScreen() {
   const [otp, setOtp] = useState('');
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const inputRefs = useRef([]);
   const navigation = useNavigation();
 
-  const handleVerifyOTP = () => {
-    // Validate OTP length
-    if (otp.length !== 6) {
-      Alert.alert('رمز OTP غير صالح', 'الرجاء إدخال رمز OTP مكون من 6 أرقام.');
-      return;
+// Handle verify OTP
+const handleOTP = async () => {
+  setLoading(true);
+  setError("");
+
+  if (!email) {
+    setError("Please fill all fields");
+    setLoading(false);
+    return;
+  }
+  try {
+    const data = { email };
+    console.log('Sending request to:', `${BASE_URL}/auth/forgetPassword`);
+    console.log('Request data:', data);
+
+    const response = await axios.post(`${BASE_URL}/auth/forgetPassword`, data, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    console.log('Response data:', response.data);
+    setLoading(false);
+    Alert.alert("برجاء تفحص البريد الالكتروني الخاص بك");
+    navigation.navigate('otp');
+  } catch (err) {
+    console.error('Network error:', err);
+    if (err.response) {
+      console.error('Server responded with status code', err.response.status);
+      console.error('Response data:', err.response.data);
+    } else if (err.request) {
+      console.error('No response received from server:', err.request);
+    } else {
+      console.error('Error setting up request:', err.message);
     }
-    Alert.alert('تم التحقق من رمز OTP', `لقد أدخلت: ${otp}`);
-  };
+    setError("Invalid email");
+    setLoading(false);
+  }
+}
 
   const handleInputChange = (index, value) => {
     if (value.length <= 1) {
@@ -63,7 +96,7 @@ export default function OTPScreen() {
           </View>
         ))}
       </View>
-      <TouchableOpacity style={styles.button} onPress={handleVerifyOTP}>
+      <TouchableOpacity style={styles.button} >
         <Text style={styles.buttonText}>التحقق من الرمز </Text>
       </TouchableOpacity>
     </View>

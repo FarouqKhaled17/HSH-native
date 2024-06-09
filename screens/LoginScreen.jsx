@@ -6,6 +6,7 @@ import { COLORS } from '../constants/theme.js';
 import { ArrowLeftIcon } from 'react-native-heroicons/solid';
 import axios from 'axios';
 import { BASE_URL } from '../constants/GlobalRoute.js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -15,12 +16,10 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
 
-  const BASE_URL = `http://192.168.100.4:7000/api/v1` ; 
-
   const handleLogin = async () => {
     setLoading(true);
     setError("");
-
+  
     if (!email || !password) {
       setError("Please fill all fields");
       setLoading(false);
@@ -34,9 +33,12 @@ export default function LoginScreen() {
           'Authorization': 'Bearer YOUR_ACCESS_TOKEN' 
         }
       });
-      console.log(response.data);
+      console.log(response.data.payLoad.userId);
       setLoading(false);
       Alert.alert("Logged in successfully");
+      // Correctly handle the promises returned by AsyncStorage.setItem
+      await AsyncStorage.setItem('token', response.data.token);
+      await AsyncStorage.setItem('userId', response.data.payLoad.userId.toString());
       navigation.navigate('MainTabs');
     } catch (err) {
       console.error('Network error:', err);
@@ -52,6 +54,7 @@ export default function LoginScreen() {
       setLoading(false);
     }
   };
+  
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.white }}>

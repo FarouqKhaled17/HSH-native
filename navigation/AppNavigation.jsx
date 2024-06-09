@@ -9,7 +9,6 @@ import OTPScreen from '../screens/OTPScreen.jsx';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import ReservationScreen from '../screens/ReservationScreen.jsx';
 import ProfileScreen from '../screens/ProfileScreen.jsx';
-import HistoryScreen from '../screens/HistoryScreen.jsx';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 

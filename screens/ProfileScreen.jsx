@@ -6,8 +6,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../constants/theme.js';
 
 export default function ProfileScreen() {
-  const [name, setName] = useState('John Doe');
-  const [email, setEmail] = useState('john@example.com');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [profileImage, setProfileImage] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -27,10 +27,10 @@ export default function ProfileScreen() {
   };
 
   const handleUpdateProfile = () => {
-    // Logic to update user profile
     console.log('Updated profile:', { name, email, profileImage });
-    // Add logic to update user data in the backend
   };
+
+  
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
