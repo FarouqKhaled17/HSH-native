@@ -1,15 +1,29 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Modal } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Modal, TextInput } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../constants/theme.js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '../constants/GlobalRoute.js';
+import axios from 'axios';
 
 export default function ProfileScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [facultyName, setFacultyName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [levelName, setLevelName] = useState('');
+  const [govName, setGovName] = useState('');
+  const [nationalId, setNationalId] = useState('');
   const [profileImage, setProfileImage] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [userReservations, setUserReservations] = useState([]);
+
+  useEffect(() => {
+    getUserProfile();
+    getUserReservations();
+  }, []);
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -30,7 +44,51 @@ export default function ProfileScreen() {
     console.log('Updated profile:', { name, email, profileImage });
   };
 
-  
+  // get user profile handler
+  const getUserProfile = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const userId = await AsyncStorage.getItem('userId');
+      console.log('Token for fetching user profile:', token);
+      const { data } = await axios.get(`${BASE_URL}/myProfile/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setName(data.student[0].userName);
+      setEmail(data.student[0].email);
+      setFacultyName(data.student[0].faculty_name);
+      setPhoneNumber(data.student[0].phoneNumber);
+      setLevelName(data.student[0].level_name);
+      setGovName(data.student[0].gov_name);
+      setNationalId(data.student[0].national_id);
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error);
+    }
+  };
+
+  // Get user reservations handler
+  const getUserReservations = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const userId = await AsyncStorage.getItem('userId');
+      console.log('Token for fetching user reservations:', token);
+      console.log('User ID:', userId);
+      if (!userId) {
+        console.error('User ID not found');
+        return;
+      }
+      const { data } = await axios.get(`${BASE_URL}/myReservations/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      console.log('User reservations:', data);
+      setUserReservations(data.results);
+    } catch (error) {
+      console.error('Failed to fetch user reservations:', error);
+    }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -38,12 +96,35 @@ export default function ProfileScreen() {
         <View style={styles.profileContainer}>
           <TouchableOpacity onPress={pickImage} style={styles.profilePhotoContainer}>
             <Image source={profileImage ? { uri: profileImage } : require('../assets/imgs/profile-pic (11).png')} style={styles.profilePhoto} />
-            <MaterialIcons name="camera-alt" size={24} color="#fff325" style={styles.cameraIcon} />
+            <MaterialIcons name="camera-alt" size={24} color="#000" style={styles.cameraIcon} />
           </TouchableOpacity>
           <Text style={styles.name}>{name}</Text>
           <View style={styles.detailsContainer}>
             <View style={styles.detailItem}>
-              <Text style={styles.detailText}>{email}</Text>
+              <Text style={styles.label}>Email:</Text>
+              <Text style={styles.value}>{email}</Text>
+            </View>
+            <View style={styles.detailItem}>
+              <Text style={styles.label}>Faculty:</Text>
+              <Text style={styles.value}>{facultyName}</Text>
+            </View>
+            <View style={styles.detailItem}>
+              <Text style={styles.label}>Phone:</Text>
+              <Text style={styles.value}>{phoneNumber}</Text>
+            </View>
+          </View>
+          <View style={styles.detailsContainer}>
+            <View style={styles.detailItem}>
+              <Text style={styles.label}>Level:</Text>
+              <Text style={styles.value}>{levelName}</Text>
+            </View>
+            <View style={styles.detailItem}>
+              <Text style={styles.label}>Government:</Text>
+              <Text style={styles.value}>{govName}</Text>
+            </View>
+            <View style={styles.detailItem}>
+              <Text style={styles.label}>National ID:</Text>
+              <Text style={styles.value}>{nationalId}</Text>
             </View>
           </View>
           <TouchableOpacity style={styles.editButton} onPress={() => setIsModalVisible(true)}>
@@ -56,31 +137,16 @@ export default function ProfileScreen() {
               <Text style={[styles.tableCell, styles.tableHeader]}>Date</Text>
               <Text style={[styles.tableCell, styles.tableHeader]}>Service</Text>
               <Text style={[styles.tableCell, styles.tableHeader]}>Status</Text>
-              <Text style={[styles.tableCell, styles.tableHeader]}>Status</Text>
-              <Text style={[styles.tableCell, styles.tableHeader]}>Status</Text>
+              <Text style={[styles.tableCell, styles.tableHeader]}>Exam Type</Text>
             </View>
-            <View style={styles.tableRow}>
-              <Text style={styles.tableCell}>2022-06-15</Text>
-              <Text style={styles.tableCell}>Appointment</Text>
-              <Text style={styles.tableCell}>Confirmed</Text>
-              <Text style={styles.tableCell}>Confirmed</Text>
-              <Text style={styles.tableCell}>Confirmed</Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={styles.tableCell}>2022-06-15</Text>
-              <Text style={styles.tableCell}>Appointment</Text>
-              <Text style={styles.tableCell}>Confirmed</Text>
-              <Text style={styles.tableCell}>Confirmed</Text>
-              <Text style={styles.tableCell}>Confirmed</Text>
-            </View><View style={styles.tableRow}>
-              <Text style={styles.tableCell}>2022-06-15</Text>
-              <Text style={styles.tableCell}>Appointment</Text>
-              <Text style={styles.tableCell}>Confirmed</Text>
-              <Text style={styles.tableCell}>Confirmed</Text>
-              <Text style={styles.tableCell}>Confirmed</Text>
-            </View>
-            
-            {/* Add more rows for additional reservations */}
+            {userReservations.slice(0, 2).map((reservation, index) => (
+              <View style={styles.tableRow} key={index}>
+                <Text style={styles.tableCell}>{reservation.date}</Text>
+                <Text style={styles.tableCell}>{reservation.clinic_name}</Text>
+                <Text style={styles.tableCell}>{reservation.status}</Text>
+                <Text style={styles.tableCell}>{reservation.examType}</Text>
+              </View>
+            ))}
           </View>
         </View>
       </View>
@@ -89,12 +155,13 @@ export default function ProfileScreen() {
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>Edit Profile</Text>
           <TextInput style={styles.modalInput} value={name} onChangeText={setName} placeholder="Name" />
-          <TextInput style={styles.modalInput} value={name} onChangeText={setName} placeholder="Name" />
-          <TextInput style={styles.modalInput} value={name} onChangeText={setName} placeholder="Name" />
           <TextInput style={styles.modalInput} value={email} onChangeText={setEmail} placeholder="Email" keyboardType="email-address" />
-          <TextInput style={styles.modalInput} value={email} onChangeText={setEmail} placeholder="Email" keyboardType="email-address" />
-          <TextInput style={styles.modalInput} value={email} onChangeText={setEmail} placeholder="Email" keyboardType="email-address" />
-          <TextInput style={styles.modalInput} value={email} onChangeText={setEmail} placeholder="Email" keyboardType="email-address" />
+          <TextInput style={styles.modalInput} value={facultyName} onChangeText={setFacultyName} placeholder="Faculty" />
+          <TextInput style={styles.modalInput} value={phoneNumber} onChangeText={setPhoneNumber} placeholder="
+Phone Number" />
+          <TextInput style={styles.modalInput} value={levelName} onChangeText={setLevelName} placeholder="Level" />
+          <TextInput style={styles.modalInput} value={govName} onChangeText={setGovName} placeholder="Government" />
+          <TextInput style={styles.modalInput} value={nationalId} onChangeText={setNationalId} placeholder="National ID" />
           {/* Add more fields for editing profile */}
           <TouchableOpacity style={styles.modalButton} onPress={handleUpdateProfile}>
             <Text style={styles.modalButtonText}>Save Changes</Text>
@@ -115,6 +182,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
   },
+  faculty_name: {
+    color: 'gray',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  email: {
+    color: 'gray',
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    textAlign: 'center',
+  },
   profileContainer: {
     alignItems: 'center',
     paddingBottom: 20,
@@ -129,27 +209,32 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
   },
- 
   name: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
   },
   detailsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     marginBottom: 20,
+    paddingHorizontal: 10,
+    width: '100%',
   },
   detailItem: {
-    textAlign: 'center',
+    flex: 1,
+    alignItems: 'center',
   },
-  detailLabel: {
+  label: {
+    color: 'gray',
+    fontSize: 12,
     fontWeight: 'bold',
     marginBottom: 5,
   },
-  detailText: {
-    color: 'gray',
+  value: {
+    fontSize: 8,
+    textAlign: 'center',
   },
   editButton: {
     backgroundColor: COLORS.Denim,
@@ -159,7 +244,7 @@ const styles = StyleSheet.create({
   },
   editButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   historyContainer: {
@@ -168,17 +253,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
   },
-  historyTitle: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
   table: {
     borderWidth: 1,
     borderColor: COLORS.lightBlue,
     borderRadius: 6,
     width: '100%',
-    marginTop:-100,
+    marginTop: -100,
   },
   tableRow: {
     flexDirection: 'row',
@@ -215,9 +295,26 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   modalButton: {
-    backgroundColor: 'blue',
+    backgroundColor: COLORS.Denim,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
-  }
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  closeButton: {
+    backgroundColor: '#ccc',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
 });

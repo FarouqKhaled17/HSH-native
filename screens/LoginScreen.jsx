@@ -39,6 +39,8 @@ export default function LoginScreen() {
       // Correctly handle the promises returned by AsyncStorage.setItem
       await AsyncStorage.setItem('token', response.data.token);
       await AsyncStorage.setItem('userId', response.data.payLoad.userId.toString());
+      await AsyncStorage.setItem('email', response.data.payLoad.email.toString());
+      await AsyncStorage.setItem('name', response.data.payLoad.name.toString());
       navigation.navigate('MainTabs');
     } catch (err) {
       console.error('Network error:', err);
