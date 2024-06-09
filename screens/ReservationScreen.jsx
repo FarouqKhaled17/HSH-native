@@ -35,7 +35,6 @@ export default function ReservationScreen() {
         console.error('Failed to fetch clinics:', error);
       }
     };
-
     fetchClinics();
   }, []);
 

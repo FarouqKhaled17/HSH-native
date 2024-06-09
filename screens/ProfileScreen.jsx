@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Modal, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Modal, TextInput, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,11 +19,45 @@ export default function ProfileScreen() {
   const [profileImage, setProfileImage] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [userReservations, setUserReservations] = useState([]);
+  const [levels, setLevels] = useState([]);
+  const [governorates, setGovernorates] = useState([]);
 
   useEffect(() => {
     getUserProfile();
     getUserReservations();
+    fetchLevels();
+    fetchGovernorates();
   }, []);
+
+  const fetchLevels = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      console.log('Token for fetching levels:', token);
+      const { data } = await axios.get(`${BASE_URL}/sysdata/levels`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setLevels(data);
+    } catch (error) {
+      console.error('Failed to fetch levels:', error);
+    }
+  };
+
+  const fetchGovernorates = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      console.log('Token for fetching governorates:', token);
+      const { data } = await axios.get(`${BASE_URL}/sysdata/governorates`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setGovernorates(data);
+    } catch (error) {
+      console.error('Failed to fetch governorates:', error);
+    }
+  };
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -40,8 +74,59 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleUpdateProfile = () => {
-    console.log('Updated profile:', { name, email, profileImage });
+  // update profile photo
+  const handleUpdateProfile = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const userId = await AsyncStorage.getItem('userId');
+      console.log('Token for updating profile:', token);
+      const data = {
+        name,
+        email,
+        phoneNumber,
+        levelName,
+        govName,
+        nationalId,
+      }
+      console.log('Request data:', data);
+      const response = await axios.put(`${BASE_URL}/myProfile/${userId}`, data, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      console.log('Response data:', response.data);
+      setIsModalVisible(false);
+    } catch (error) {
+      console.error('Network error:', error.response ? error.response.data : error.message); // Log detailed error
+      console.error('Failed to update profile:', error);
+    }
+  };
+
+  // update profile photo
+  const handleUpdateProfilePhoto = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const userId = await AsyncStorage.getItem('userId');
+      console.log('Token for updating profile photo:', token);
+      const data = new FormData();
+      data.append('profileImage', {
+        uri: profileImage,
+        name: 'profile.jpg',
+        type: 'image/jpg',
+      });
+      console.log('Request data:', data);
+      const response = await axios.patch(`${BASE_URL}/myProfile/${userId}`, data, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        }
+      });
+      console.log('Response data:', response.data);
+      setIsModalVisible(false);
+    } catch (error) {
+      console.error('Network error:', error.response ? error.response.data : error.message); // Log detailed error
+      console.error('Failed to update profile photo:', error);
+    }
   };
 
   // get user profile handler
@@ -89,15 +174,16 @@ export default function ProfileScreen() {
       console.error('Failed to fetch user reservations:', error);
     }
   };
-
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <View style={styles.profileContainer}>
-          <TouchableOpacity onPress={pickImage} style={styles.profilePhotoContainer}>
-            <Image source={profileImage ? { uri: profileImage } : require('../assets/imgs/profile-pic (11).png')} style={styles.profilePhoto} />
-            <MaterialIcons name="camera-alt" size={24} color="#000" style={styles.cameraIcon} />
-          </TouchableOpacity>
+        <TouchableOpacity onPress={pickImage} style={styles.profilePhotoContainer}>
+  <Image source={profileImage ? { uri: profileImage } : require('../assets/imgs/profile-pic (11).png')} style={styles.profilePhoto} />
+</TouchableOpacity>
+<TouchableOpacity onPress={handleUpdateProfilePhoto} style={styles.cameraIconContainer}>
+  <MaterialIcons name="camera-alt" size={24} color="#000" style={styles.cameraIcon} />
+</TouchableOpacity>
           <Text style={styles.name}>{name}</Text>
           <View style={styles.detailsContainer}>
             <View style={styles.detailItem}>
@@ -107,214 +193,210 @@ export default function ProfileScreen() {
             <View style={styles.detailItem}>
               <Text style={styles.label}>Faculty:</Text>
               <Text style={styles.value}>{facultyName}</Text>
-            </View>
-            <View style={styles.detailItem}>
-              <Text style={styles.label}>Phone:</Text>
-              <Text style={styles.value}>{phoneNumber}</Text>
-            </View>
-          </View>
-          <View style={styles.detailsContainer}>
-            <View style={styles.detailItem}>
-              <Text style={styles.label}>Level:</Text>
-              <Text style={styles.value}>{levelName}</Text>
-            </View>
-            <View style={styles.detailItem}>
-              <Text style={styles.label}>Government:</Text>
-              <Text style={styles.value}>{govName}</Text>
-            </View>
-            <View style={styles.detailItem}>
-              <Text style={styles.label}>National ID:</Text>
-              <Text style={styles.value}>{nationalId}</Text>
-            </View>
-          </View>
-          <TouchableOpacity style={styles.editButton} onPress={() => setIsModalVisible(true)}>
-            <Text style={styles.editButtonText}>Edit Profile</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.historyContainer}>
-          <View style={styles.table}>
-            <View style={styles.tableRow}>
-              <Text style={[styles.tableCell, styles.tableHeader]}>Date</Text>
-              <Text style={[styles.tableCell, styles.tableHeader]}>Service</Text>
-              <Text style={[styles.tableCell, styles.tableHeader]}>Status</Text>
-              <Text style={[styles.tableCell, styles.tableHeader]}>Exam Type</Text>
-            </View>
-            {userReservations.slice(0, 2).map((reservation, index) => (
-              <View style={styles.tableRow} key={index}>
-                <Text style={styles.tableCell}>{reservation.date}</Text>
-                <Text style={styles.tableCell}>{reservation.clinic_name}</Text>
-                <Text style={styles.tableCell}>{reservation.status}</Text>
-                <Text style={styles.tableCell}>{reservation.examType}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      </View>
-      {/* Modal for editing profile */}
-      <Modal visible={isModalVisible} animationType="slide">
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>Edit Profile</Text>
-          <TextInput style={styles.modalInput} value={name} onChangeText={setName} placeholder="Name" />
-          <TextInput style={styles.modalInput} value={email} onChangeText={setEmail} placeholder="Email" keyboardType="email-address" />
-          <TextInput style={styles.modalInput} value={facultyName} onChangeText={setFacultyName} placeholder="Faculty" />
-          <TextInput style={styles.modalInput} value={phoneNumber} onChangeText={setPhoneNumber} placeholder="
-Phone Number" />
-          <TextInput style={styles.modalInput} value={levelName} onChangeText={setLevelName} placeholder="Level" />
-          <TextInput style={styles.modalInput} value={govName} onChangeText={setGovName} placeholder="Government" />
-          <TextInput style={styles.modalInput} value={nationalId} onChangeText={setNationalId} placeholder="National ID" />
-          {/* Add more fields for editing profile */}
-          <TouchableOpacity style={styles.modalButton} onPress={handleUpdateProfile}>
-            <Text style={styles.modalButtonText}>Save Changes</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.closeButton} onPress={() => setIsModalVisible(false)}>
-            <Text style={styles.closeButtonText}>Close</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-    </SafeAreaView>
-  );
+</View>
+<View style={styles.detailItem}>
+  <Text style={styles.label}>Phone:</Text>
+  <Text style={styles.value}>{phoneNumber}</Text>
+</View>
+</View>
+<View style={styles.detailsContainer}>
+<View style={styles.detailItem}>
+  <Text style={styles.label}>Level:</Text>
+  <Text style={styles.value}>{levelName}</Text>
+</View>
+<View style={styles.detailItem}>
+  <Text style={styles.label}>Government:</Text>
+  <Text style={styles.value}>{govName}</Text>
+</View>
+<View style={styles.detailItem}>
+  <Text style={styles.label}>National ID:</Text>
+  <Text style={styles.value}>{nationalId}</Text>
+</View>
+</View>
+<TouchableOpacity style={styles.editButton} onPress={() => setIsModalVisible(true)}>
+<Text style={styles.editButtonText}>Edit Profile</Text>
+</TouchableOpacity>
+</View>
+<View style={styles.historyContainer}>
+<View style={styles.table}>
+<View style={styles.tableRow}>
+  <Text style={[styles.tableCell, styles.tableHeader]}>تاريخ الكشف</Text>
+  <Text style={[styles.tableCell, styles.tableHeader]}>العيادة</Text>
+  <Text style={[styles.tableCell, styles.tableHeader]}>الحالة</Text>
+</View>
+{userReservations.slice(0, 2).map((reservation, index) => (
+  <View style={styles.tableRow} key={index}>
+    <Text style={styles.tableCell}>{reservation.date}</Text>
+    <Text style={styles.tableCell}>{reservation.clinic_name}</Text>
+    <Text style={styles.tableCell}>{reservation.status}</Text>
+  </View>
+))}
+</View>
+</View>
+</View>
+{/* Modal for editing profile */}
+<Modal visible={isModalVisible} animationType="slide">
+<View style={styles.modalContainer}>
+<Text style={styles.modalTitle}>Edit Profile</Text>
+<TextInput style={styles.modalInput} value={name} onChangeText={setName} placeholder="Name" />
+<TextInput style={styles.modalInput} value={phoneNumber} onChangeText={setPhoneNumber} placeholder="Phone Number" />
+<TextInput style={styles.modalInput} value={levelName} onChangeText={setLevelName} placeholder="Level" />
+<TextInput style={styles.modalInput} value={govName} onChangeText={setGovName} placeholder="Government" />
+<TextInput style={styles.modalInput} value={nationalId} onChangeText={setNationalId} placeholder="National ID" />
+{/* Add more fields for editing profile */}
+<TouchableOpacity style={styles.modalButton} onPress={handleUpdateProfile}>
+<Text style={styles.modalButtonText}>Save Changes</Text>
+</TouchableOpacity>
+<TouchableOpacity style={styles.closeButton} onPress={() => setIsModalVisible(false)}>
+<Text style={styles.closeButtonText}>Close</Text>
+</TouchableOpacity>
+</View>
+</Modal>
+</SafeAreaView>
+);
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f9f9f9',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  faculty_name: {
-    color: 'gray',
-    fontSize: 14,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  email: {
-    color: 'gray',
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    textAlign: 'center',
-  },
-  profileContainer: {
-    alignItems: 'center',
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  profilePhotoContainer: {
-    position: 'relative',
-  },
-  profilePhoto: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-  },
-  name: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  detailsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-    paddingHorizontal: 10,
-    width: '100%',
-  },
-  detailItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  label: {
-    color: 'gray',
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  value: {
-    fontSize: 8,
-    textAlign: 'center',
-  },
-  editButton: {
-    backgroundColor: COLORS.Denim,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  editButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  historyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  table: {
-    borderWidth: 1,
-    borderColor: COLORS.lightBlue,
-    borderRadius: 6,
-    width: '100%',
-    marginTop: -100,
-  },
-  tableRow: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  tableCell: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    fontSize: 11,
-  },
-  tableHeader: {
-    backgroundColor: COLORS.Denim,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  modalInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    marginBottom: 10,
-  },
-  modalButton: {
-    backgroundColor: COLORS.Denim,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  modalButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  closeButton: {
-    backgroundColor: '#ccc',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  closeButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
+container: {
+flex: 1,
+backgroundColor: '#f9f9f9',
+paddingHorizontal: 20,
+paddingTop: 20,
+},
+faculty_name: {
+color: 'gray',
+fontSize: 14,
+fontWeight: 'bold',
+textAlign: 'center',
+},
+email: {
+color: 'gray',
+fontSize: 12,
+fontWeight: 'bold',
+marginBottom: 5,
+textAlign: 'center',
+},
+profileContainer: {
+alignItems: 'center',
+paddingBottom: 20,
+borderBottomWidth: 1,
+borderBottomColor: '#ccc',
+},
+profilePhotoContainer: {
+position: 'relative',
+},
+profilePhoto: {
+width: 120,
+height: 120,
+borderRadius: 60,
+},
+name: {
+fontSize: 20,
+fontWeight: 'bold',
+marginBottom: 10,
+},
+detailsContainer: {
+flexDirection: 'row',
+alignItems: 'center',
+justifyContent: 'space-between',
+marginBottom: 20,
+paddingHorizontal: 10,
+width: '100%',
+},
+detailItem: {
+flex: 1,
+alignItems: 'center',
+},
+label: {
+color: 'gray',
+fontSize: 14,
+fontWeight: 'bold',
+marginBottom: 5,
+textAlign: 'right', 
+},
+value: {
+fontSize: 10,
+textAlign: 'center',
+},
+editButton: {
+backgroundColor: COLORS.Denim,
+paddingVertical: 10,
+paddingHorizontal: 20,
+borderRadius: 8,
+},
+editButtonText: {
+color: '#fff',
+fontSize: 14,
+fontWeight: 'bold',
+},
+historyContainer: {
+flex: 1,
+justifyContent: 'center',
+alignItems: 'center',
+marginTop: 20,
+},
+table: {
+borderWidth: 1,
+borderColor: COLORS.lightBlue,
+borderRadius: 6,
+width: '100%',
+marginTop: -100,
+},
+tableRow: {
+flexDirection: 'row',
+borderBottomWidth: 1,
+borderBottomColor: '#ccc',
+},
+tableCell: {
+flex: 1,
+paddingVertical: 10,
+paddingHorizontal: 15,
+fontSize: 11,
+},
+tableHeader: {
+backgroundColor: COLORS.Denim,
+color: '#fff',
+fontWeight: 'bold',
+},
+modalContainer: {
+flex: 1,
+backgroundColor: '#fff',
+padding: 20,
+},
+modalTitle: {
+fontSize: 24,
+fontWeight: 'bold',
+marginBottom: 20,
+},
+modalInput: {
+borderWidth: 1,
+borderColor: '#ccc',
+borderRadius: 8,
+paddingVertical: 10,
+paddingHorizontal: 15,
+marginBottom: 10,
+},
+modalButton: {
+backgroundColor: COLORS.Denim,
+paddingVertical: 12,
+borderRadius: 8,
+alignItems: 'center',
+},
+modalButtonText: {
+color: '#fff',
+fontSize: 14,
+fontWeight: 'bold',
+},
+closeButton: {
+backgroundColor: '#ccc',
+paddingVertical: 12,
+borderRadius: 8,
+alignItems: 'center',
+marginTop: 10,
+},
+closeButtonText: {
+color: '#fff',
+fontSize: 14,
+fontWeight: 'bold',
+},
 });
